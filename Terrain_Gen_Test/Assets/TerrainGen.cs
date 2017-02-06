@@ -105,7 +105,7 @@ public class TerrainData
         }
     }
 
-    public float getHeight(int x,int y)
+    public float getHeight(float x,float y)
     {
         //Get Quad We are in, 0 = axis, 1-4 are the quads
         int quad = 0;
@@ -135,22 +135,30 @@ public class TerrainData
         float[] V3 = new float[2];
         float[] V4 = new float[2];
         //Find The Corners
-        c1[0] = (x / SideSize) * SideSize;
-        c1[1] = (y / SideSize) * SideSize;
 
-        c2[0] = ((x / SideSize) * SideSize)+SideSize;
-        c2[1] = ((y / SideSize) * SideSize);
+        int x1 = (x<0 ? (((int)x-SideSize)/SideSize)*SideSize :((int)x/SideSize)*SideSize );
+        int x2 = x1 + SideSize;
 
-        c3[0] = ((x / SideSize) * SideSize) + SideSize;
-        c3[1] = ((y / SideSize) * SideSize) + SideSize;
+        int y1 = (y < 0 ? (((int)y - SideSize) / SideSize) * SideSize : ((int)y / SideSize) * SideSize);
+        int y2 = y1 + SideSize;
 
-        c4[0] = ((x / SideSize) * SideSize);
-        c4[1] = ((y / SideSize) * SideSize) + SideSize;
+
+        c1[0] = x1;
+        c1[1] = y1;
+
+        c2[0] = x2;
+        c2[1] = y1;
+
+        c3[0] = x2;
+        c3[1] = y2;
+
+        c4[0] = x1;
+        c4[1] = y2;
         //Give Each Corner a new Random with unique Seed, this will alow us to quickly recreate the world if need be
-        System.Random R1 = new System.Random(QuadSeeds[quad] + getID(c1[0], c1[1]) + 500);
-        System.Random R2 = new System.Random(QuadSeeds[quad] + getID(c2[0], c2[1]) + 500);
-        System.Random R3 = new System.Random(QuadSeeds[quad] + getID(c3[0], c3[1]) + 500);
-        System.Random R4 = new System.Random(QuadSeeds[quad] + getID(c4[0], c4[1]) + 500);
+        System.Random R1 = new System.Random(QuadSeeds[quad] + getID(c1[0], c1[1]) + 5);
+        System.Random R2 = new System.Random(QuadSeeds[quad] + getID(c2[0], c2[1]) + 5);
+        System.Random R3 = new System.Random(QuadSeeds[quad] + getID(c3[0], c3[1]) + 5);
+        System.Random R4 = new System.Random(QuadSeeds[quad] + getID(c4[0], c4[1]) + 5);
 
         //Generate the Vectors
         double t = R1.NextDouble();//Temp Var
@@ -186,15 +194,17 @@ public class TerrainData
         return Mathf.RoundToInt((float)(Math.Pow(x, 3) + Math.Pow(y, 3)));
     }
 
-    private float DotProduct(float x,float y,int xi,int yi)
+    private float DotProduct(float x,float y,float xi,float yi)
     {
         return (x * xi) + (y * yi);
     }
 
     private float wAdv(float x,float y,float w)
     {
-        return (x + y) / 2;
-        //return (1 - w) * x+ w * y;
+        w = w / SideSize;
+       // Debug.Log(w);
+       //eturn (x + y) / 2;
+        return (1 - w) * x+ w * y;
     }
 
 }
