@@ -19,6 +19,7 @@ public class TerrainGen : MonoBehaviour {
     MeshRenderer    M_Rend;
     Mesh            M_mesh;
     TerrainData     TD_Data;
+    TerrainData TD_Octive2;
 	// Use this for initialization
 	void Start () {
         M_Coll = GetComponent<MeshCollider>();
@@ -26,6 +27,8 @@ public class TerrainGen : MonoBehaviour {
         M_Rend = GetComponent<MeshRenderer>();
         T_Trans = transform;
         TD_Data = new TerrainData(Seed);
+        TD_Octive2 = new TerrainData(Seed+59);
+        TD_Octive2.SideSize = 30;
         M_mesh = new Mesh();
         M_mesh.name = "World Mesh";
         buildMesh();
@@ -35,8 +38,15 @@ public class TerrainGen : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
-	}
+        Vector3[] verts = M_Filt.mesh.vertices;
+        for(int v = 0; v<verts.Length;v++)
+        {
+            verts[v].y = TD_Data.getHeight(verts[v].x+T_Trans.position.x, verts[v].z + T_Trans.position.z);
+        }
+        M_Filt.mesh.vertices = verts;
+        M_Coll.sharedMesh = M_Filt.mesh;
+
+    }
      
     public void buildMesh()
     {
@@ -91,7 +101,7 @@ public class TerrainData
 
     int Seed;
     int[] QuadSeeds = new int[5];
-    int SideSize = 25;
+    public int SideSize = 50;
 
     private System.Random rand;
     private System.Random[] QuadRand = new System.Random[5];
@@ -106,88 +116,56 @@ public class TerrainData
         }
     }
 
-    public float getHeight(float x,float y)
+
+        public float getHeight(float x, float y)
     {
-        //Get Quad We are in, 0 = axis, 1-4 are the quads
-        int quad = 0;
-
-        //Our Corner Points
-        int[] c1 = new int[2];
-        int[] c2 = new int[2];
-        int[] c3 = new int[2];
-        int[] c4 = new int[2];
-        //The Vectors Assigned to said points
-        float[] V1 = new float[2];
-        float[] V2 = new float[2];
-        float[] V3 = new float[2];
-        float[] V4 = new float[2];
-        //Find The Corners
-
-        int x1 = (x<0 ? (((int)Math.Floor(x) - SideSize)/SideSize)*SideSize :((int)Math.Floor(x) / SideSize)*SideSize );
+        int x1 = (((int)x) / SideSize);
+        int y1 = (((int)y) / SideSize);
+        x1 = (x < 0 ? (x1 - 1) * SideSize : x1 * SideSize);
+        y1 = (y < 0 ? (y1 - 1) * SideSize : y1 * SideSize);
         int x2 = x1 + SideSize;
-
-        int y1 = (y < 0 ? (((int)Math.Floor(y) - SideSize) / SideSize) * SideSize : ((int)Math.Floor(y) / SideSize) * SideSize);
         int y2 = y1 + SideSize;
 
+        System.Random R1 = new System.Random(getID(x1, y1) * Seed);
+        System.Random R2 = new System.Random(getID(x1, y2) * Seed);
+        System.Random R3 = new System.Random(getID(x2, y1) * Seed);
+        System.Random R4 = new System.Random(getID(x2, y2) * Seed);
 
-        c1[0] = x1;
-        c1[1] = y1;
+        double v1, v2, v3, v4;
+        v1 = R1.NextDouble();
+        v2 = R2.NextDouble();
+        v3 = R3.NextDouble();
+        v4 = R4.NextDouble();
 
-        c2[0] = x2;
-        c2[1] = y1;
 
-        c3[0] = x2;
-        c3[1] = y2;
 
-        c4[0] = x1;
-        c4[1] = y2;
-        //Give Each Corner a new Random with unique Seed, this will alow us to quickly recreate the world if need be
-        System.Random R1 = new System.Random(getID(c1[0], c1[1]) * 50);
-        System.Random R2 = new System.Random(getID(c2[0], c2[1]) * 50);
-        System.Random R3 = new System.Random(getID(c3[0], c3[1]) * 50);
-        System.Random R4 = new System.Random(getID(c4[0], c4[1]) * 50);
+        float d1, d2, d3, d4;
+            d1 = DotProduct(Math.Cos(v1 * 2 * Math.PI), Math.Sin(v1 * 2 * Math.PI), x - x1, y - y1);
+            d2 = DotProduct(Math.Cos(v2 * 2 * Math.PI), Math.Sin(v2 * 2 * Math.PI), x - x1, y - y2);
+            d3 = DotProduct(Math.Cos(v3 * 2 * Math.PI), Math.Sin(v3 * 2 * Math.PI), x - x2, y - y1);
+            d4 = DotProduct(Math.Cos(v4 * 2 * Math.PI), Math.Sin(v4 * 2 * Math.PI), x - x2, y - y2);
 
-        //Generate the Vectors
-        double t = R1.NextDouble();//Temp Var
-        V1[0] = Mathf.Cos((float)c1[0] * 2 * Mathf.PI);
-        V1[1] = Mathf.Sin((float)c1[1] * 2 * Mathf.PI);
-        t = R2.NextDouble();
-        V2[0] = Mathf.Cos((float)c2[0] * 2 * Mathf.PI);
-        V2[1] = Mathf.Sin((float)c2[1] * 2 * Mathf.PI);
-        t = R3.NextDouble();
-        V3[0] = Mathf.Cos((float)c3[0] * 2 * Mathf.PI);
-        V3[1] = Mathf.Sin((float)c3[1] * 2 * Mathf.PI);
-        t = R4.NextDouble();
-        V4[0] = Mathf.Cos((float)c4[0] * 2 * Mathf.PI);
-        V4[1] = Mathf.Sin((float)c4[1] * 2 * Mathf.PI);
-        Debug.Log(V1[0] + ":" + V1[1]);
-        Debug.Log(V2[0] + ":" + V2[1]);
-        Debug.Log(V3[0] + ":" + V3[1]);
-        Debug.Log(V4[0] + ":" + V4[1]);
 
-        //Take DOT Products
-        float i,j,k,l;
-        i = DotProduct(V1[0], V1[1], (x - c1[0])/SideSize, (y - c1[1]) / SideSize);
-        j = DotProduct(V2[0], V2[1], (x - c2[0]) / SideSize, (y - c2[1]) / SideSize);
-        k = DotProduct(V3[0], V3[1], (x - c3[0]) / SideSize, (y - c3[1]) / SideSize);
-        l = DotProduct(V4[0], V4[1], (x - c4[0]) / SideSize, (y - c4[1]) / SideSize);
-
-        //Adverage
-       float v = wAdv(wAdv(i, j, (x-c1[0]) ), wAdv(k, l, (x-c1[0]) ),(y- c1[1]));
-
-        //Return Value
-        //TODO Perlin Noise Function! W00T!
-        return v;// (float)(rand.NextDouble()*3)-1 ;
+            return wAdv(wAdv(d1, d3, x - x1), wAdv(d2, d4, x - x1), y-y1);
     }
 
     private int getID(int x, int y)
     {
-        return x+ Mathf.RoundToInt((float)(Math.Pow(x, y) -Math.Pow(y, x)));
+        if (x == 0 && y == 0) { 
+            return 0;
+
+        } else if (x == 0) {
+            return y + y%SideSize;
+        } else if (y == 0) {
+            return x + x%SideSize;
+        } else {
+            return x + y + x%SideSize + y%SideSize + x%y + y%x;
+        }
     }
 
-    private float DotProduct(float x,float y,float xi,float yi)
+    private float DotProduct(double x,double y,float xi,float yi)
     {
-        return (x * xi) + (y * yi);
+        return (float)((x * xi) + (y * yi));
     }
 
     private float wAdv(float a1,float a2,float w)
