@@ -8,10 +8,12 @@ using UnityEngine;
 public class TerrainGen : MonoBehaviour {
 
     [SerializeField]
-    private int EdgeSize = 20;
+    public int EdgeSize = 20;
     [SerializeField]
-    private int Seed = 10;
-
+    public int Seed = 10;
+    public float localWeight = 1f;
+    public int OocSize = 20;
+    public float octWeight = 0.25f;
 
     Transform T_Trans;
     MeshCollider    M_Coll;
@@ -19,54 +21,52 @@ public class TerrainGen : MonoBehaviour {
     MeshRenderer    M_Rend;
     Mesh            M_mesh;
     TerrainData     TD_Data;
-    TerrainData TD_Octive2;
+    TerrainData     TD_Octive2;
 	// Use this for initialization
 	void Start () {
-        M_Coll = GetComponent<MeshCollider>();
-        M_Filt = GetComponent<MeshFilter>();
-        M_Rend = GetComponent<MeshRenderer>();
-        T_Trans = transform;
-        TD_Data = new TerrainData(Seed);
-        TD_Octive2 = new TerrainData(Seed+59);
-        TD_Octive2.SideSize = 30;
-        M_mesh = new Mesh();
-        M_mesh.name = "World Mesh";
-        buildMesh();
-        M_Filt.mesh = M_mesh;
-        M_Coll.sharedMesh = M_mesh;
+        //buildMesh();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-        Vector3[] verts = M_Filt.mesh.vertices;
-        for(int v = 0; v<verts.Length;v++)
-        {
-            verts[v].y = TD_Data.getHeight(verts[v].x+T_Trans.position.x, verts[v].z + T_Trans.position.z);
-        }
-        M_Filt.mesh.vertices = verts;
-        M_Coll.sharedMesh = M_Filt.mesh;
+       
 
     }
      
     public void buildMesh()
     {
-        if(M_mesh == null)
+        #region DerfineVars
+        if (M_mesh == null)
         {
             M_mesh = new Mesh();
             M_mesh.name = "World Mesh";
         }
+        M_Coll = GetComponent<MeshCollider>();
+        M_Filt = GetComponent<MeshFilter>();
+        M_Rend = GetComponent<MeshRenderer>();
+        T_Trans = transform;
+        TD_Data = new TerrainData(Seed);
+        TD_Octive2 = new TerrainData(Seed + 59);
+        TD_Octive2.SideSize = OocSize;
         Vector3[] Verts = new Vector3[EdgeSize * EdgeSize];
         Vector2[] UVs   = new Vector2[EdgeSize * EdgeSize];
         int[] Trys = new int[6*((EdgeSize-1)*(EdgeSize-1))];
+        #endregion
         //Build Verts
-        for(int y = 0; y < EdgeSize; y++)
+
+        for (int y = 0; y < EdgeSize; y++)
         {
             for(int x = 0; x < EdgeSize; x++)
             {
                 int id = y * EdgeSize + x;
                 int Xi = x - (EdgeSize / 2);
                 int Yi = y - (EdgeSize / 2);
-                Verts[id] = new Vector3(Xi, TD_Data.getHeight(Xi, Yi), Yi);
+                Verts[id] = new Vector3(
+                    Xi,
+                    (localWeight*TD_Data.getHeight(Xi+T_Trans.position.x, Yi + T_Trans.position.z))
+                        +(TD_Octive2.getHeight(Xi + T_Trans.position.x, Yi + T_Trans.position.z)*octWeight),
+                    Yi);
+
                 UVs[id] = new Vector2(Mathf.Abs(x % 2),Mathf.Abs( y % 2));
             }
         }
@@ -91,6 +91,9 @@ public class TerrainGen : MonoBehaviour {
         M_mesh.vertices = Verts;
         M_mesh.triangles = Trys;
         M_mesh.uv = UVs;
+
+        M_Filt.mesh = M_mesh;
+        M_Coll.sharedMesh = M_mesh;
     }
 
 
@@ -101,7 +104,7 @@ public class TerrainData
 
     int Seed;
     int[] QuadSeeds = new int[5];
-    public int SideSize = 50;
+    public int SideSize = 5;
 
     private System.Random rand;
     private System.Random[] QuadRand = new System.Random[5];
@@ -140,10 +143,10 @@ public class TerrainData
 
 
         float d1, d2, d3, d4;
-            d1 = DotProduct(Math.Cos(v1 * 2 * Math.PI), Math.Sin(v1 * 2 * Math.PI), x - x1, y - y1);
-            d2 = DotProduct(Math.Cos(v2 * 2 * Math.PI), Math.Sin(v2 * 2 * Math.PI), x - x1, y - y2);
-            d3 = DotProduct(Math.Cos(v3 * 2 * Math.PI), Math.Sin(v3 * 2 * Math.PI), x - x2, y - y1);
-            d4 = DotProduct(Math.Cos(v4 * 2 * Math.PI), Math.Sin(v4 * 2 * Math.PI), x - x2, y - y2);
+            d1 = DotProduct(Math.Cos(v1 * 2 * Math.PI), Math.Sin(v1 * 2 * Math.PI), x1 - x, y1 - y);
+            d2 = DotProduct(Math.Cos(v2 * 2 * Math.PI), Math.Sin(v2 * 2 * Math.PI), x1 - x, y2 - y);
+            d3 = DotProduct(Math.Cos(v3 * 2 * Math.PI), Math.Sin(v3 * 2 * Math.PI), x2- x, y1 - y);
+            d4 = DotProduct(Math.Cos(v4 * 2 * Math.PI), Math.Sin(v4 * 2 * Math.PI), x2 - x, y2 - y);
 
 
             return wAdv(wAdv(d1, d3, x - x1), wAdv(d2, d4, x - x1), y-y1);
@@ -155,11 +158,11 @@ public class TerrainData
             return 0;
 
         } else if (x == 0) {
-            return y + y%SideSize;
+            return y + y*y;
         } else if (y == 0) {
-            return x + x%SideSize;
+            return x + x*x;
         } else {
-            return x + y + x%SideSize + y%SideSize + x%y + y%x;
+            return x + y + (x % y) + (y % x)+(x* x) + (y* y) + (x* y); 
         }
     }
 
