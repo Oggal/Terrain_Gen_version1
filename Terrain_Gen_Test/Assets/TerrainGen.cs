@@ -67,8 +67,13 @@ public class TerrainGen : MonoBehaviour {
                         +(TD_Octive2.getHeight(Xi + T_Trans.position.x, Yi + T_Trans.position.z)*octWeight),
                     Yi);
 
-                UVs[id] = new Vector2(Mathf.Abs(x % 2),Mathf.Abs( y % 2));
-            }
+                int xu = x % 4;
+                int yu = y % 4;
+                float u = ((xu > 2 ? (xu - 2)%3 : xu%3)/ 2.0f);
+                float v = ((yu > 2 ? (yu - 2) % 3 : yu % 3) / 2.0f);
+
+                UVs[id] = new Vector2(Mathf.Abs(u),Mathf.Abs(v));
+            } 
         }
         //Build Trangles
         for (int y = 0; y < EdgeSize - 1; y++)
@@ -106,17 +111,11 @@ public class TerrainData
     int[] QuadSeeds = new int[5];
     public int SideSize = 5;
 
-    private System.Random rand;
-    private System.Random[] QuadRand = new System.Random[5];
     public TerrainData(object i)
     {
         this.Seed = i.GetHashCode();
-        rand = new System.Random(Seed);
-        for(int a = 0; a < 5; a++)
-        {
-            QuadRand[a] = new System.Random(rand.Next());
-            QuadSeeds[a] = (int)(QuadRand[a].NextDouble()*9999999);
-        }
+
+
     }
 
 
@@ -174,8 +173,6 @@ public class TerrainData
     private float wAdv(float a1,float a2,float w)
     {
         w = w / SideSize;
-       // Debug.Log(w);
-       //eturn (x + y) / 2;
         return (1 - w) * a1+ w * a2;
     }
 
