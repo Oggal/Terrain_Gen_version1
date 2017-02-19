@@ -32,7 +32,7 @@ public class TerrainGen : MonoBehaviour {
        
 
     }
-     
+
     public void buildMesh()
     {
         #region DerfineVars
@@ -49,49 +49,69 @@ public class TerrainGen : MonoBehaviour {
         TD_Octive2 = new TerrainData(Seed + 59);
         TD_Octive2.SideSize = OocSize;
         Vector3[] Verts = new Vector3[EdgeSize * EdgeSize];
-        Vector2[] UVs   = new Vector2[EdgeSize * EdgeSize];
-        int[] Trys = new int[6*((EdgeSize-1)*(EdgeSize-1))];
+        Vector2[] UVs = new Vector2[EdgeSize * EdgeSize];
+        int[] Trys = new int[6 * ((EdgeSize - 1) * (EdgeSize - 1))];
+        float wX = T_Trans.position.x;
+        float wY = T_Trans.position.z;
         #endregion
+
+
+
         //Build Verts
 
         for (int y = 0; y < EdgeSize; y++)
         {
-            for(int x = 0; x < EdgeSize; x++)
+            for (int x = 0; x < EdgeSize; x++)
             {
                 int id = y * EdgeSize + x;
                 int Xi = x - (EdgeSize / 2);
                 int Yi = y - (EdgeSize / 2);
                 Verts[id] = new Vector3(
                     Xi,
-                    (localWeight*TD_Data.getHeight(Xi+T_Trans.position.x, Yi + T_Trans.position.z))
-                        +(TD_Octive2.getHeight(Xi + T_Trans.position.x, Yi + T_Trans.position.z)*octWeight),
+                    (localWeight * TD_Data.getHeight(Xi + wX, Yi + wY))
+                        + (TD_Octive2.getHeight(Xi + wX, Yi + wY) * octWeight),
                     Yi);
 
                 int xu = x % 4;
                 int yu = y % 4;
-                float u = ((xu > 2 ? (xu - 2)%3 : xu%3)/ 2.0f);
-                float v = ((yu > 2 ? (yu - 2) % 3 : yu % 3) / 2.0f);
+                float u;
+                if (xu > 2)
+                {
+                    xu = (xu - 2) % 3;
+                }
+                else
+                {
+                    xu = xu % 3;
+                }
+                u = xu / 2.0f;
+                float v;
+                if (yu > 2)
+                {
+                    yu = (yu - 2) % 3;
+                }
+                else
+                {
+                    yu = yu % 3;
+                }
+                v = yu / 2.0f;
 
-                UVs[id] = new Vector2(Mathf.Abs(u),Mathf.Abs(v));
-            } 
-        }
-        //Build Trangles
-        for (int y = 0; y < EdgeSize - 1; y++)
-        {
-            for(int x = 0; x < EdgeSize - 1; x++)
-            {
-                int ID = y * EdgeSize + x;
-                int T_id = (y*(EdgeSize-1) + x)*6;
-                Trys[T_id]   = ID;
-                Trys[T_id+1] = ID+EdgeSize;
-                Trys[T_id+2] = ID+1;
+                UVs[id] = new Vector2(Mathf.Abs(u), Mathf.Abs(v));
 
-                Trys[T_id+3] = ID+1;
-                Trys[T_id+4] = ID+EdgeSize;
-                Trys[T_id+5] = ID+1+EdgeSize;
+                // Build Triangles
+                if (y < EdgeSize - 1 && x < EdgeSize - 1)
+                {
+                    int T_id = (y * (EdgeSize - 1) + x) * 6;
+                    Trys[T_id] = id;
+                    Trys[T_id + 1] = id + EdgeSize;
+                    Trys[T_id + 2] = id + 1;
 
+                    Trys[T_id + 3] = id + 1;
+                    Trys[T_id + 4] = id + EdgeSize;
+                    Trys[T_id + 5] = id + 1 + EdgeSize;
+                }
             }
         }
+
         //Assign Values
         M_mesh.vertices = Verts;
         M_mesh.triangles = Trys;
