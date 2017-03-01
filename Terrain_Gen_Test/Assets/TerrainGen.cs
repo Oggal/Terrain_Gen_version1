@@ -78,9 +78,7 @@ public class TerrainGen : MonoBehaviour {
                 if (xu > 2)
                 {
                     xu = (xu - 2) % 3;
-                }
-                else
-                {
+                }else{
                     xu = xu % 3;
                 }
                 u = xu / 2.0f;
@@ -88,9 +86,7 @@ public class TerrainGen : MonoBehaviour {
                 if (yu > 2)
                 {
                     yu = (yu - 2) % 3;
-                }
-                else
-                {
+                }else{
                     yu = yu % 3;
                 }
                 v = yu / 2.0f;
@@ -173,6 +169,8 @@ public class TerrainData
 
     private int getID(int x, int y)
     {
+        return (x >> 5)+y|x;
+        /*
         if (x == 0 && y == 0) { 
             return 0;
 
@@ -183,6 +181,7 @@ public class TerrainData
         } else {
             return x + y + (x % y) + (y % x)+(x* x) + (y* y) + (x* y); 
         }
+        */
     }
 
     private float DotProduct(double x,double y,float xi,float yi)
@@ -193,6 +192,7 @@ public class TerrainData
     private float wAdv(float a1,float a2,float w)
     {
         w = w / SideSize;
+
         return (1 - w) * a1+ w * a2;
     }
 
