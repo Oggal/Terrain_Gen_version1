@@ -7,13 +7,16 @@ using System;
 public class TerrainTileControler : MonoBehaviour {
     [SerializeField]
     public bool useSeed = true;
+    public bool BuildOnRun = true;
+
     [SerializeField]
     public string Seed = "Terrain Test 1";
 
     public int TileSize = 100;
-    public int OctiveSize = 50;
+    public uint OctaveCount = 5;
     public float OctiveWeight = 0.2f;
     public float localWeight = 1f;
+    public Material mat;
     private int iSeed;
     private int wSeed;
     [SerializeField]
@@ -22,7 +25,8 @@ public class TerrainTileControler : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        buildWorld();
+        if(BuildOnRun)
+            buildWorld();
 	}
 	
 	// Update is called once per frame
@@ -45,18 +49,23 @@ public class TerrainTileControler : MonoBehaviour {
             for (int x = -1; x <= 1; x++)
             {
                 int id = 3 * (1 - y) + x + 1;
+                if (TerrainTiles[id] == null)
+                {
+                    TerrainTiles[id] = new GameObject("Tile"+id);
+                }
                 if (TerrainTiles[id].GetComponent<TerrainGen>() == null)
                 {
                     TerrainTiles[id].AddComponent<TerrainGen>();
                 }
                 TerrainTiles[id].GetComponent<TerrainGen>().Seed = wSeed;
                 TerrainTiles[id].GetComponent<TerrainGen>().EdgeSize = TileSize + 1;
-                TerrainTiles[id].GetComponent<TerrainGen>().OocSize = OctiveSize;
+                TerrainTiles[id].GetComponent<TerrainGen>().OctSize = OctaveCount;
                 TerrainTiles[id].GetComponent<TerrainGen>().octWeight = OctiveWeight;
                 TerrainTiles[id].GetComponent<TerrainGen>().localWeight = localWeight;
                 //TerrainTiles[id].transform.SetParent(gameObject.transform);
-                TerrainTiles[id].transform.position = new Vector3(x * TileSize, 0, y * TileSize);
+                TerrainTiles[id].transform.position = new Vector3(x * TileSize * transform.localScale.x, 0, y * TileSize*transform.localScale.z);
                 TerrainTiles[id].GetComponent<TerrainGen>().buildMesh();
+                TerrainTiles[id].GetComponent<MeshRenderer>().material = mat;
 
             }
         }

@@ -14,17 +14,22 @@ public class TerrainGen : MonoBehaviour {
     public float localWeight = 1f;
     public int OocSize = 20;
     public float octWeight = 0.25f;
+    public uint OctSize = 1;
 
     Transform T_Trans;
     MeshCollider    M_Coll;
     MeshFilter      M_Filt;
     MeshRenderer    M_Rend;
     Mesh            M_mesh;
+    TerrainData[] TD_Octaves;
+    int[] Seeds;
     TerrainData     TD_Data;
     TerrainData     TD_Octive2;
+    System.Random Randy;
 	// Use this for initialization
 	void Start () {
         //buildMesh();
+ 
 	}
 	
 	// Update is called once per frame
@@ -41,18 +46,25 @@ public class TerrainGen : MonoBehaviour {
             M_mesh = new Mesh();
             M_mesh.name = "World Mesh";
         }
+        Randy = new System.Random(Seed);
         M_Coll = GetComponent<MeshCollider>();
         M_Filt = GetComponent<MeshFilter>();
         M_Rend = GetComponent<MeshRenderer>();
+
+        Seeds = null;
+
         T_Trans = transform;
+        float wX = T_Trans.localPosition.x;
+        float wY = T_Trans.localPosition.z;
+        /*
         TD_Data = new TerrainData(Seed);
         TD_Octive2 = new TerrainData(Seed + 59);
         TD_Octive2.SideSize = OocSize;
+        */
         Vector3[] Verts = new Vector3[EdgeSize * EdgeSize];
         Vector2[] UVs = new Vector2[EdgeSize * EdgeSize];
         int[] Trys = new int[6 * ((EdgeSize - 1) * (EdgeSize - 1))];
-        float wX = T_Trans.position.x;
-        float wY = T_Trans.position.z;
+        
         #endregion
 
 
@@ -68,8 +80,7 @@ public class TerrainGen : MonoBehaviour {
                 int Yi = y - (EdgeSize / 2);
                 Verts[id] = new Vector3(
                     Xi,
-                    (localWeight * TD_Data.getHeight(Xi + wX, Yi + wY))
-                        + (TD_Octive2.getHeight(Xi + wX, Yi + wY) * octWeight),
+                    GetHeight(Xi + wX, Yi + wY),
                     Yi);
 
                 int xu = x % 4;
@@ -117,23 +128,61 @@ public class TerrainGen : MonoBehaviour {
         M_Coll.sharedMesh = M_mesh;
     }
 
-
+    private float GetHeight(float x, float y)
+    {
+        if (OctSize == 0)
+        {
+            OctSize++;
+        }
+        if(Seeds == null || TD_Octaves == null)
+        {
+            Seeds = new int[OctSize];
+            TD_Octaves = new TerrainData[OctSize];
+            for (int i = 0; i < OctSize; i++){
+                Seeds[i] = Randy.Next();
+                TD_Octaves[i] = new TerrainData(Seeds[i], (i + 1) * 5);
+            }
+        }
+        float output = 0;
+        for(int i = 0; i < OctSize; i++)
+        {
+            output += TD_Octaves[i].getHeight(x, y) * ((i+1)/(octWeight*OctSize));
+        }
+        return output;
+    }
 }
 
 public class TerrainData
 {
 
     int Seed;
-    int[] QuadSeeds = new int[5];
     public int SideSize = 5;
+    Dictionary<int, double> VectorLib = new Dictionary<int, double>();
 
-    public TerrainData(object i)
+    public TerrainData(object i,int Size = 5)
     {
-        this.Seed = i.GetHashCode();
-
-
+       Seed = i.GetHashCode();
+       SideSize = Size;
     }
 
+
+    private double getVector(int x, int y)
+    {
+        int index = getID(x, y) * Seed;
+        if (VectorLib.ContainsKey(index))
+        {
+            double O; 
+                VectorLib.TryGetValue(index, out O);
+            return O;
+        } else
+        {
+
+            System.Random R1 = new System.Random(index);
+            double O = R1.NextDouble();
+            VectorLib.Add(index, O);
+            return O;
+        }
+    }
 
         public float getHeight(float x, float y)
     {
@@ -144,16 +193,11 @@ public class TerrainData
         int x2 = x1 + SideSize;
         int y2 = y1 + SideSize;
 
-        System.Random R1 = new System.Random(getID(x1, y1) * Seed);
-        System.Random R2 = new System.Random(getID(x1, y2) * Seed);
-        System.Random R3 = new System.Random(getID(x2, y1) * Seed);
-        System.Random R4 = new System.Random(getID(x2, y2) * Seed);
-
         double v1, v2, v3, v4;
-        v1 = R1.NextDouble();
-        v2 = R2.NextDouble();
-        v3 = R3.NextDouble();
-        v4 = R4.NextDouble();
+        v1 = getVector(x1, y1);
+        v2 = getVector(x1, y2);
+        v3 = getVector(x2, y1);
+        v4 = getVector(x2, y2);
 
 
 
@@ -170,18 +214,7 @@ public class TerrainData
     private int getID(int x, int y)
     {
         return (x >> 5)+y|x;
-        /*
-        if (x == 0 && y == 0) { 
-            return 0;
 
-        } else if (x == 0) {
-            return y + y*y;
-        } else if (y == 0) {
-            return x + x*x;
-        } else {
-            return x + y + (x % y) + (y % x)+(x* x) + (y* y) + (x* y); 
-        }
-        */
     }
 
     private float DotProduct(double x,double y,float xi,float yi)
