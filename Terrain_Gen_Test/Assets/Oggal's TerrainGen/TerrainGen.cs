@@ -2,6 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+
+
+/*
+Oggal's Terrain Gen
+*/
+
 [RequireComponent(typeof(MeshCollider))]
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]

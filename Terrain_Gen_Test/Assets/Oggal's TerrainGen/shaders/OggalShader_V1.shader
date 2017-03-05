@@ -1,5 +1,5 @@
 ﻿Shader "Custom/OggalShader_V1" {
-	
+//Oggal's Terrain Gen
 	Properties{
 		_Tint("Tint",Color) = (1,1,1,1)
 		[NoScaleOffset]_Rtex("High Texture", 2D) = "red" {}
