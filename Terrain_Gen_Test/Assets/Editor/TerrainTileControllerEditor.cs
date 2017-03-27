@@ -18,6 +18,14 @@ using System;
             long end = DateTime.Now.Ticks;
             Debug.Log(((int)(end - start)) / 10000000);
         }
+        if (GUILayout.Button("Clear Childern"))
+        {
+            int childs = localControl.transform.childCount;
+            for (int i = childs - 1; i >= 0; i--)
+            {
+                GameObject.DestroyImmediate(localControl.transform.GetChild(i).gameObject);
+            }
+        }
     }
 
 }

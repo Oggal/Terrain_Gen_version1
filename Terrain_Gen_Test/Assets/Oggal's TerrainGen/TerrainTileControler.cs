@@ -18,7 +18,9 @@ public class TerrainTileControler : MonoBehaviour {
 
     [SerializeField]
     public string Seed = "Terrain Test 1";
-  
+
+    public int size = 1;
+    public int TrueSize = 3;//TrueSize = size*2+1;
 
     public int TileSize = 100;
     public uint OctaveCount = 5;
@@ -28,7 +30,7 @@ public class TerrainTileControler : MonoBehaviour {
     private int iSeed;
     private int wSeed;
 
-    private GameObject[] TerrainTiles = new GameObject[9];
+    public GameObject[] TerrainTiles;
     private System.Random randy;
 
     private int localX = 0;
@@ -183,6 +185,8 @@ public class TerrainTileControler : MonoBehaviour {
 
     public void buildWorld()
     {
+        TrueSize = size * 2 + 1;
+        TerrainTiles = new GameObject[TrueSize * TrueSize];
         iSeed = Seed.GetHashCode();
         if (!useSeed)
         {
@@ -191,11 +195,11 @@ public class TerrainTileControler : MonoBehaviour {
         }
         randy = new System.Random(iSeed);
         wSeed = randy.Next();
-        for (int y = -1; y <= 1; y++)
+        for (int y = -1*size; y <= size; y++)
         {
-            for (int x = -1; x <= 1; x++)
+            for (int x = -1*size; x <= size; x++)
             {
-                int id = 3 * (1 - y) + x + 1;
+                int id = TrueSize * (size - y) + x + size;
                 if (TerrainTiles[id] == null)
                 {
                     TerrainTiles[id] = new GameObject("Tile"+id);
