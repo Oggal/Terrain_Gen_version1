@@ -130,7 +130,7 @@ public class TerrainGen : MonoBehaviour {
         M_mesh.vertices = Verts;
         M_mesh.triangles = Trys;
         M_mesh.uv = UVs;
-
+        M_mesh.RecalculateNormals();
         M_Filt.mesh = M_mesh;
         M_Coll.sharedMesh = M_mesh;
     }

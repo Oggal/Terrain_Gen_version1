@@ -19,12 +19,15 @@
 		SubShader{
 
 			Pass{
+				Tags{
+				"LightMode" = "ForwardBase"
+				}
 				CGPROGRAM
 
 				#pragma vertex MyVertexProgram
 				#pragma fragment MyFragmentProgram
 
-				#include "UnityCG.cginc"
+				#include "UnityStandardBRDF.cginc"
 				
 	float4 _Tint;
 	sampler2D _Rtex;
@@ -41,6 +44,7 @@
 
 	struct VertexData {
 		float4 pos : POSITION;
+		float3 norm : NORMAL;
 		float2 uv : TEXCOORD0;
 		
 	};
@@ -49,6 +53,7 @@
 		float4 pos : SV_POSITION;
 		float2 uv : TEXCOORD0;
 		float3 localPos : TEXCOORD1;
+		float3 norm : TEXCOORD2;
 	};
 
 				Interpolators MyVertexProgram(VertexData v) {
@@ -65,11 +70,17 @@
 					i.localPos.g = max(0,min(1, 2 - ((x / _GRange)*(x / _GRange))));
 					x = v.pos.y - _BMid;
 					i.localPos.b = max(0,min(1, 2 - ((x / _BRange)*(x / _BRange))));
+					i.norm = UnityObjectToWorldNormal(v.norm);
 					return i;
 				}
 			
 				float4 MyFragmentProgram(Interpolators i) : SV_TARGET {
-					return (tex2D(_Rtex,i.uv) * i.localPos.r + tex2D(_Gtex,i.uv) * i.localPos.g + tex2D(_Btex, i.uv) * i.localPos.b + tex2D(_aTex,i.uv)*(1 - i.localPos.r - i.localPos.g - i.localPos.b)) *_Tint;
+					//i.norm = normalize(i.norm); 
+				float3 lightSun = _WorldSpaceLightPos0.xyz;
+				float3 colSun = _LightColor0.rgb;
+				float3 diffuse = colSun * DotClamped(lightSun, i.norm);
+				//return DotClamped(lightSun, i.norm);
+					return float4(diffuse,1) * (tex2D(_Rtex,i.uv) * i.localPos.r + tex2D(_Gtex,i.uv) * i.localPos.g + tex2D(_Btex, i.uv) * i.localPos.b + tex2D(_aTex,i.uv)*(1 - i.localPos.r - i.localPos.g - i.localPos.b)) *_Tint;
 				}
 
 				ENDCG
