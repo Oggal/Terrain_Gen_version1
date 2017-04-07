@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
+
 
 
 
@@ -49,24 +49,24 @@ public class TerrainTileControler : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        if (Player.transform.position.x / (TileSize * transform.localScale.x) > localX+0.5f){
+        if (Player.transform.position.x / (TileSize * transform.localScale.x) > localX+((float)size/2)){
             Debug.Log("Player is East!");
             localX++;
             MoveX(true);
         }
-        if(Player.transform.position.x / (TileSize * transform.localScale.x) <  localX-0.5f)
+        if(Player.transform.position.x / (TileSize * transform.localScale.x) <  localX- ((float)size / 2))
         {
             Debug.Log("Player is West!");
             localX--;
             MoveX(false);
         }
-        if (Player.transform.position.z / (TileSize * transform.localScale.z) > localZ + 0.5f)
+        if (Player.transform.position.z / (TileSize * transform.localScale.z) > localZ + ((float)size / 2))
         {
             Debug.Log("Player is North!");
             localZ++;
             MoveY(true);
         }
-        if (Player.transform.position.z / (TileSize * transform.localScale.z) < localZ - 0.5f)
+        if (Player.transform.position.z / (TileSize * transform.localScale.z) < localZ - ((float)size / 2))
         {
             Debug.Log("Player is South!");
             localZ--;
@@ -81,19 +81,14 @@ public class TerrainTileControler : MonoBehaviour {
             for(int i = 0; i < TrueSize; i++)
             {
                 int id = i * TrueSize;
-                TerrainTiles[id].transform.position = new Vector3((localX+size) * TileSize * transform.localScale.x,0,(localZ + (size-i))*TileSize*transform.localScale.z);
-                TerrainTiles[id].GetComponent<TerrainGen>().buildMesh();
+                //   TerrainTiles[id].transform.position = new Vector3((localX+size) * TileSize * transform.localScale.x,0,(localZ + (size-i))*TileSize*transform.localScale.z);
+                // TerrainTiles[id].GetComponent<TerrainGen>().buildMesh();
+                TerrainGen ti = TerrainTiles[id].GetComponent<TerrainGen>();
+                Vector3 p = new Vector3((localX + size) * TileSize * transform.localScale.x, 0, (localZ + (size - i)) * TileSize * transform.localScale.z);
+                ti.queMove(p);
+
             }
-            /*
-            TerrainTiles[0].transform.position = new Vector3((localX + 1) * TileSize * transform.localScale.x, 0, (localZ + 1) * TileSize * transform.localScale.z);
-            TerrainTiles[0].GetComponent<TerrainGen>().buildMesh();
 
-            TerrainTiles[3].transform.position = new Vector3((localX + 1) * TileSize * transform.localScale.x, 0, (localZ) * TileSize * transform.localScale.z);
-            TerrainTiles[3].GetComponent<TerrainGen>().buildMesh();
-
-            TerrainTiles[6].transform.position = new Vector3((localX + 1) * TileSize * transform.localScale.x, 0, (localZ - 1) * TileSize * transform.localScale.z);
-            TerrainTiles[6].GetComponent<TerrainGen>().buildMesh();
-            */
             for(int y =0; y < TrueSize; y++)
             {
                 GameObject tem = TerrainTiles[y * TrueSize];
@@ -103,41 +98,23 @@ public class TerrainTileControler : MonoBehaviour {
                 }
                 TerrainTiles[y * (TrueSize) + TrueSize-1] = tem;
             }
-            /*
-            GameObject temp = TerrainTiles[1];
-            TerrainTiles[1] = TerrainTiles[2];
-            TerrainTiles[2] = TerrainTiles[0];
-            TerrainTiles[0] = temp;
-            temp = TerrainTiles[4];
-            TerrainTiles[4] = TerrainTiles[5];
-            TerrainTiles[5] = TerrainTiles[3];
-            TerrainTiles[3] = temp;
-            temp = TerrainTiles[7];
-            TerrainTiles[7] = TerrainTiles[8];
-            TerrainTiles[8] = TerrainTiles[6];
-            TerrainTiles[6] = temp;
-            */
+
         }
         else {
             //West
             for (int i = 0; i < TrueSize; i++)
             {
                 int id = ((i+1) * TrueSize)-1;
-                TerrainTiles[id].transform.position = new Vector3((localX - size) * TileSize * transform.localScale.x, 0, (localZ + (size-i)) * TileSize * transform.localScale.z);
-                TerrainTiles[id].GetComponent<TerrainGen>().buildMesh();
+              //  TerrainTiles[id].transform.position = new Vector3((localX - size) * TileSize * transform.localScale.x, 0, (localZ + (size-i)) * TileSize * transform.localScale.z);
+              //  TerrainTiles[id].GetComponent<TerrainGen>().buildMesh();
+                TerrainGen ti = TerrainTiles[id].GetComponent<TerrainGen>();
+                Vector3 p = new Vector3((localX - size) * TileSize * transform.localScale.x, 0, (localZ + (size - i)) * TileSize * transform.localScale.z);
+                ti.queMove(p);
+
             }
 
 
-            /*
-            TerrainTiles[2].transform.position = new Vector3((localX - 1) * TileSize * transform.localScale.x, 0, (localZ + 1) * TileSize * transform.localScale.z);
-            TerrainTiles[2].GetComponent<TerrainGen>().buildMesh();
 
-            TerrainTiles[5].transform.position = new Vector3((localX - 1) * TileSize * transform.localScale.x, 0, (localZ) * TileSize * transform.localScale.z);
-            TerrainTiles[5].GetComponent<TerrainGen>().buildMesh();
-
-            TerrainTiles[8].transform.position = new Vector3((localX - 1) * TileSize * transform.localScale.x, 0, (localZ - 1) * TileSize * transform.localScale.z);
-            TerrainTiles[8].GetComponent<TerrainGen>().buildMesh();
-            */
             for (int y = 0; y < TrueSize; y++)
             {
                 GameObject tem = TerrainTiles[y * TrueSize + TrueSize - 1];
@@ -147,20 +124,7 @@ public class TerrainTileControler : MonoBehaviour {
                 }
                 TerrainTiles[y * TrueSize ] = tem;
             }
-            /*
-            GameObject temp = TerrainTiles[0];
-            TerrainTiles[0] = TerrainTiles[2];
-            TerrainTiles[2] = TerrainTiles[1];
-            TerrainTiles[1] = temp;
-            temp = TerrainTiles[3];
-            TerrainTiles[3] = TerrainTiles[5];
-            TerrainTiles[5] = TerrainTiles[4];
-            TerrainTiles[4] = temp;
-            temp = TerrainTiles[6];
-            TerrainTiles[6] = TerrainTiles[8];
-            TerrainTiles[8] = TerrainTiles[7];
-            TerrainTiles[7] = temp;
-            */
+
 
         }
 
@@ -173,9 +137,9 @@ public class TerrainTileControler : MonoBehaviour {
             //North
                 for (int i = 0; i < TrueSize; i++)
                 {
-
-                    TerrainTiles[(TrueSize * (TrueSize - 1)) + i].transform.position = new Vector3((localX + (i-size))*TileSize*transform.localScale.x, 0, (localZ + size)*TileSize*transform.localScale.z);
-                    TerrainTiles[(TrueSize * (TrueSize - 1)) + i].GetComponent<TerrainGen>().buildMesh();
+                TerrainGen ti = TerrainTiles[(TrueSize * (TrueSize - 1)) + i].GetComponent<TerrainGen>();
+                Vector3 p = new Vector3((localX + (i - size)) * TileSize * transform.localScale.x, 0, (localZ + size) * TileSize * transform.localScale.z);
+                 ti.queMove(p);
                 }
  
                  for(int x = 0; x < TrueSize; x++)
@@ -194,9 +158,12 @@ public class TerrainTileControler : MonoBehaviour {
             //South
                 for (int i = 0; i < TrueSize; i++)
                 {
-                    TerrainTiles[i].transform.position = new Vector3((localX + (i-size)) *TileSize* transform.localScale.x, 0, (localZ - size) *TileSize* transform.localScale.z);
-                    TerrainTiles[i].GetComponent<TerrainGen>().buildMesh();
-                }
+                TerrainGen ti = TerrainTiles[i].GetComponent<TerrainGen>();
+                Vector3 p = new Vector3((localX + (i - size)) * TileSize * transform.localScale.x, 0, (localZ - size) * TileSize * transform.localScale.z);
+                ti.queMove(p);
+                //TerrainTiles[i].transform.position = new Vector3((localX + (i-size)) *TileSize* transform.localScale.x, 0, (localZ - size) *TileSize* transform.localScale.z);
+                // TerrainTiles[i].GetComponent<TerrainGen>().buildMesh();
+            }
 
                     for(int x = 0; x < TrueSize; x++)
                 {

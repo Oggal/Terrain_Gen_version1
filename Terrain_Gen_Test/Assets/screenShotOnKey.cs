@@ -7,33 +7,28 @@ public class screenShotOnKey : MonoBehaviour {
     // Update is called once per frame
     void Start()
     {
-        Debug.Log(Application.dataPath + "/ScreenShots");
-        System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(Application.dataPath + "/ScreenShots");
-        try
-        {
-            // Determine whether the directory exists.
-            if (di.Exists)
-            {
-                // Indicate that it already exists.
-                return;
-            }
-
-            // Try to create the directory.
-            di.Create();
-            Debug.Log("The directory was created successfully.");
-        }
-        catch (Exception e)
-        {
-            Debug.Log(e.Message);
-        }
-        
+   
     }
 
     void Update () {
-        if (Input.GetKeyDown(KeyCode.P))
+        if (Input.GetKeyDown(KeyCode.F2))
         {
-         int x =   System.IO.Directory.GetFiles(Application.dataPath+"/ScreenShots").Length;
-            Application.CaptureScreenshot("ScreenShots/Screen" + x+ ".png",2);
+            TakeScreenShot();
         }
-	}
+    }
+
+    void TakeScreenShot()
+    {
+        int count = 0;
+        System.IO.DirectoryInfo d = new System.IO.DirectoryInfo("Screenshot/");
+        if (!d.Exists)
+        {
+            System.IO.Directory.CreateDirectory(d.ToString());
+            d= new System.IO.DirectoryInfo("Screenshot/");
+        }
+            System.IO.FileInfo[] fis = d.GetFiles();
+            count = fis.Length;
+            Application.CaptureScreenshot("Screenshot/Screenshot_" + count + ".png", 2);
+        
+    }
 }
