@@ -36,6 +36,8 @@ public class TerrainGen : MonoBehaviour {
     TerrainData     TD_ScaleMap;
     System.Random Randy;
 	// Use this for initialization
+
+
 	void Start () {
         //buildMesh();
 
@@ -223,6 +225,10 @@ public class TerrainGen : MonoBehaviour {
         M_mesh.RecalculateNormals();
         M_Filt.mesh = M_mesh;
         M_Coll.sharedMesh = M_mesh;
+        if(GetComponent<TerrainDeco>() != null)
+        {
+            GetComponent<TerrainDeco>().Deco();
+        }
     }
 
     private float GetHeight(float x, float y)

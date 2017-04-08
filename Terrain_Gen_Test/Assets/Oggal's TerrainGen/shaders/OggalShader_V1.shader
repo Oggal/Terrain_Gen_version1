@@ -11,7 +11,9 @@
 		[NoScaleOffset]_Btex("Low Texture", 2D) = "blue" {}
 		_BMid("Center",Float) = -15
 		_BRange("Range" , Float) = 10
-
+		[NoScaleOffset]_Roadtex("Road",2D) = "white" {}
+		_RoadRange("Range", Float) = 5
+		_RoadBlend("Road Blend",Float) = 1
 		[NoScaleOffset]_aTex("Base Texture", 2D) = "blue" {}
 
 	}
@@ -29,7 +31,7 @@
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
 
-			#include "MyLighting.cginc"
+			#include "Mylighting.cginc"
 
 			ENDCG
 		}
@@ -37,7 +39,7 @@
 			Tags{
 				"LightMode" = "ForwardBase"
 			}
-			Blend One One
+			Blend SrcAlpha [_RoadBlend]
 			ZWrite Off
 			CGPROGRAM
 			#pragma target 3.0
@@ -45,7 +47,7 @@
 			#pragma vertex MyVertexProgram
 			#pragma fragment MyFragmentProgram
 
-			#include "MyLighting.cginc"
+			#include "MyRoads.cginc"
 			ENDCG
 		}
 
