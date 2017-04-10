@@ -25,6 +25,7 @@ public class TerrainTileControler : MonoBehaviour {
     public int TileSize = 100;
     public uint OctaveCount = 5;
     public float OctiveWeight = 1.5f;
+    public List<GameObject> Trees = new List<GameObject>();
     private float localWeight = 1f;
 
     private int iSeed;
@@ -204,6 +205,9 @@ public class TerrainTileControler : MonoBehaviour {
                 if (TerrainTiles[id].GetComponent<TerrainGen>() == null)
                 {
                     TerrainTiles[id].AddComponent<TerrainGen>();
+                    TerrainTiles[id].AddComponent<TerrainDeco>().TreeList = Trees;
+                    
+                  
                 }
                 TerrainTiles[id].GetComponent<TerrainGen>().Seed = wSeed;
                 TerrainTiles[id].GetComponent<TerrainGen>().EdgeSize = TileSize + 1;
