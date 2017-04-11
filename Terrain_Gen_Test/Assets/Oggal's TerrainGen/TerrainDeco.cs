@@ -41,6 +41,34 @@ public class TerrainDeco : MonoBehaviour {
         World_Z = transform.localPosition.z;
         if (!Generate) { return; }
         Vector3[] Verts = GetComponent<MeshFilter>().sharedMesh.vertices;
+        for (int a = 0; a < Verts.Length; a += 10)
+        {
+            Vector3 v = Verts[a];
+            if(v.y <0)                    {return;}
+            if(v.x % 2==0|| v.z % 2 == 0) {return;}
+            RaycastHit hitInfo;
+            if (Physics.Raycast(v + Vector3.up,Vector3.down,out hitInfo))
+            {
+                if(hitInfo.normal.y > 0.75)
+                {
+                    Vector3 Rot = new Vector3(0, Mathf.Tan(hitInfo.normal.z / hitInfo.normal.x), 0);
+                    int i = ((int)Mathf.Abs(hitInfo.normal.x * 10f * hitInfo.point.z)) % TreeList.Count;
+                    Instantiate(TreeList[i], hitInfo.point + new Vector3(hitInfo.normal.z * 2, -0.2f, hitInfo.normal.x * 2), Quaternion.Euler(Rot), transform);
+                    
+                }
+            }
+        }
+
+    }
+
+
+    public void OldDeco()
+    {
+        CheckNulls();
+        World_X = transform.localPosition.x;
+        World_Z = transform.localPosition.z;
+        if (!Generate) { return; }
+        Vector3[] Verts = GetComponent<MeshFilter>().sharedMesh.vertices;
         if (GenTrees && TreeList.Count >0)
         {
 
