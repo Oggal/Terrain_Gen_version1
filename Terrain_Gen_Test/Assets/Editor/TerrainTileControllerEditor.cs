@@ -26,6 +26,14 @@ using System;
                 GameObject.DestroyImmediate(localControl.transform.GetChild(i).gameObject);
             }
         }
+        if (GUILayout.Button("Save"))
+        {
+            localControl.Save();
+        }
+        if (GUILayout.Button("Load"))
+        {
+            localControl.Load();
+        }
     }
 
 }

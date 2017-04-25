@@ -1,5 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
 
@@ -12,6 +15,7 @@ public class TerrainTileControler : MonoBehaviour {
     [SerializeField]
     public bool useSeed = true;
     public bool BuildOnRun = true;
+    public bool LoadOnRun;
 
     public Material mat;
     public GameObject Player;
@@ -25,11 +29,12 @@ public class TerrainTileControler : MonoBehaviour {
     public int TileSize = 100;
     public uint OctaveCount = 5;
     public float OctiveWeight = 1.5f;
+    public float layerWeight = 1f;
     public List<GameObject> Trees = new List<GameObject>();
-    private float localWeight = 1f;
 
     private int iSeed;
-    private int wSeed;
+    [HideInInspector]
+    public int wSeed;
 
     public GameObject[] TerrainTiles;
     private System.Random randy;
@@ -45,10 +50,25 @@ public class TerrainTileControler : MonoBehaviour {
         }
         if(BuildOnRun)
             buildWorld();
+
+        if(!BuildOnRun && LoadOnRun)
+        {
+            Load();
+        }
 	}
 	
 	// Update is called once per frame
 	void Update () {
+        if (Input.GetKeyDown(KeyCode.F5))
+        {
+            Save();
+        }
+        if (Input.GetKeyDown(KeyCode.F4))
+        {
+            Load();
+        }
+
+
 
         if (Player.transform.position.x / (TileSize * transform.localScale.x) > localX+((float)size/2)){
             Debug.Log("Player is East!");
@@ -205,15 +225,12 @@ public class TerrainTileControler : MonoBehaviour {
                 if (TerrainTiles[id].GetComponent<TerrainGen>() == null)
                 {
                     TerrainTiles[id].AddComponent<TerrainGen>();
-                    TerrainTiles[id].AddComponent<TerrainDeco>().TreeList = Trees;
-                    
-                  
                 }
                 TerrainTiles[id].GetComponent<TerrainGen>().Seed = wSeed;
                 TerrainTiles[id].GetComponent<TerrainGen>().EdgeSize = TileSize + 1;
                 TerrainTiles[id].GetComponent<TerrainGen>().OctSize = OctaveCount;
                 TerrainTiles[id].GetComponent<TerrainGen>().octWeight = OctiveWeight;
-                TerrainTiles[id].GetComponent<TerrainGen>().localWeight = localWeight;
+                TerrainTiles[id].GetComponent<TerrainGen>().layerWeight = layerWeight;
                 //TerrainTiles[id].transform.SetParent(gameObject.transform);
                 TerrainTiles[id].transform.position = new Vector3(x * TileSize * transform.localScale.x, 0, y * TileSize*transform.localScale.z);
                 TerrainTiles[id].GetComponent<TerrainGen>().buildMesh();
@@ -221,6 +238,142 @@ public class TerrainTileControler : MonoBehaviour {
 
             }
         }
+    }
+
+    private void BuildFromSave()
+    {
+        if(transform.childCount != 0)
+        {
+            int childs = transform.childCount;
+            for (int i = childs - 1; i >= 0; i--)
+            {
+                GameObject.DestroyImmediate(transform.GetChild(i).gameObject);
+            }
+        }
+        TrueSize = size * 2 + 1;
+        TerrainTiles = new GameObject[TrueSize * TrueSize];
+
+        for (int z = -1 * size; z <= size; z++)
+        {
+            for (int x = -1 * size; x <= size; x++)
+            {
+                int id = TrueSize * (size - z) + x + size;
+                if (TerrainTiles[id] == null)
+                {
+                    TerrainTiles[id] = new GameObject("Tile" + id);
+                    TerrainTiles[id].transform.parent = gameObject.transform;
+                    TerrainTiles[id].transform.localScale = new Vector3(1, 1, 1);
+                }
+                if (TerrainTiles[id].GetComponent<TerrainGen>() == null)
+                {
+                    TerrainTiles[id].AddComponent<TerrainGen>();
+                }
+                TerrainTiles[id].GetComponent<TerrainGen>().Seed = wSeed;
+                TerrainTiles[id].GetComponent<TerrainGen>().EdgeSize = TileSize + 1;
+                TerrainTiles[id].GetComponent<TerrainGen>().OctSize = OctaveCount;
+                TerrainTiles[id].GetComponent<TerrainGen>().octWeight = OctiveWeight;
+                TerrainTiles[id].GetComponent<TerrainGen>().layerWeight = layerWeight;
+                //TerrainTiles[id].transform.SetParent(gameObject.transform);
+                TerrainTiles[id].transform.position = new Vector3((x+localX) * TileSize * transform.localScale.x, 0, (z + localZ) * TileSize * transform.localScale.z);
+                TerrainTiles[id].GetComponent<TerrainGen>().buildMesh();
+                TerrainTiles[id].GetComponent<MeshRenderer>().material = mat;
+
+            }
+        }
+
+    }
+    public void Load()
+    {
+        BinaryFormatter bf = new BinaryFormatter();
+        FileStream file = File.Open(Application.persistentDataPath + "/SaveData.dat", FileMode.Open);
+        WorldSave dat = bf.Deserialize(file) as WorldSave;
+        if(dat != null)
+        {
+            loadWorld(dat);
+        }
+        else
+        {
+            Debug.LogError("WorldSave Corrupt!!!");
+        }
+        file.Close();
+    }
+
+    public void loadWorld(WorldSave ws)
+    {
+        this.wSeed = ws.getSeed();
+        Vector3 wPos = ws.getWorldPos();
+        localX = (int)wPos.x;
+        localZ = (int)wPos.z;
+        //BuildWorld;
+        BuildFromSave();
+
+        Player.transform.position = ws.getPlayerPos();
+        Player.transform.rotation = ws.getPlayerRot();
+       
+    }
+    public void Save()
+    {
+        saveWorld();
+    }
+
+    public WorldSave saveWorld()
+    {
+        WorldSave Data = new WorldSave(this);
+        Data.SetWorldPos(new int[2]{localX,localZ});
+        BinaryFormatter bf = new BinaryFormatter();
+        FileStream file = File.Open(Application.persistentDataPath + "/SaveData.dat", FileMode.OpenOrCreate);
+        bf.Serialize(file, Data);
+        file.Close();
+        return Data;
+    }
+}
+
+
+[Serializable]
+public class WorldSave
+{
+    [SerializeField]
+    private float[] plyPos;
+    [SerializeField]
+    private int[] worldPos;
+    [SerializeField]
+    private int     WorldSeed;
+
+
+    public WorldSave(TerrainTileControler TTC)
+    {
+        plyPos = new float[6];
+        plyPos[0] = TTC.Player.transform.position.x;
+        plyPos[1] = TTC.Player.transform.position.y;
+        plyPos[2] = TTC.Player.transform.position.z;
+        plyPos[3] = TTC.Player.transform.rotation.eulerAngles.x;
+        plyPos[4] = TTC.Player.transform.rotation.eulerAngles.y;
+        plyPos[5] = TTC.Player.transform.rotation.eulerAngles.z;
+
+        worldPos = new int[2];
+        WorldSeed = TTC.wSeed;
+    }
+
+    public void SetWorldPos(int[] i)
+    {
+        if(i.Length != 2) { Debug.LogError("World Pos Array Wrong Size!"); return; }
+        worldPos = i;
+    }
+    public int getSeed()
+    {
+        return WorldSeed;
+    }
+    public Vector3 getWorldPos()
+    {
+        return new Vector3(worldPos[0], 0, worldPos[1]);
+    }
+    public Vector3 getPlayerPos()
+    {
+        return new Vector3(plyPos[0], plyPos[1], plyPos[2]);
+    }
+    public Quaternion getPlayerRot()
+    {
+        return Quaternion.Euler(plyPos[3], plyPos[4], plyPos[5]);
     }
 }
 
