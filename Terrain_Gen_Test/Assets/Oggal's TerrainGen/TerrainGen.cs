@@ -5,6 +5,7 @@ using UnityEngine;
 using System.Threading;
 
 
+
 /*
 Oggal's Terrain Gen
 */
@@ -12,7 +13,8 @@ Oggal's Terrain Gen
 [RequireComponent(typeof(MeshCollider))]
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
-public class TerrainGen : MonoBehaviour {
+public class TerrainGen : MonoBehaviour
+{
 
     [SerializeField]
     public int EdgeSize = 20;
@@ -22,36 +24,38 @@ public class TerrainGen : MonoBehaviour {
     public int OocSize = 20;
     public float octWeight = 0.25f;
     public uint OctSize = 1;
-    
+
 
     Transform T_Trans;
-    MeshCollider    M_Coll;
-    MeshFilter      M_Filt;
-    Mesh            M_mesh;
+    MeshCollider M_Coll;
+    MeshFilter M_Filt;
+    Mesh M_mesh;
     MeshData newMesh = null;
     bool wait = false;
     Vector3 newPos;
-    TerrainData[]   TD_Octaves;
+    TerrainNoise[] TD_Octaves;
     int[] Seeds;
-    TerrainData     TD_ScaleMap;
+    TerrainNoise TD_ScaleMap;
     System.Random Randy;
-	// Use this for initialization
+    // Use this for initialization
 
 
-	void Start () {
+    void Start()
+    {
         //buildMesh();
 
         Randy = new System.Random(Seed);
         M_Coll = GetComponent<MeshCollider>();
         M_Filt = GetComponent<MeshFilter>();
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update()
+    {
 
         if (wait && newMesh != null)
         {
-           
+
             M_Filt.mesh = newMesh.ToMesh();
             M_Coll.sharedMesh = newMesh.ToMesh();
             wait = false;
@@ -70,14 +74,15 @@ public class TerrainGen : MonoBehaviour {
         T_Trans = transform;
         transform.position = p;
         wX = T_Trans.localPosition.x;
-         wY = T_Trans.localPosition.z;
-        
+        wY = T_Trans.localPosition.z;
+
         new Thread(Move).Start();
     }
 
-    private void Move() { 
+    private void Move()
+    {
 
-         MeshData m = new MeshData();
+        MeshData m = new MeshData();
         //m.name = "World Mesh        
 
         Vector3[] Verts = new Vector3[EdgeSize * EdgeSize];
@@ -104,7 +109,8 @@ public class TerrainGen : MonoBehaviour {
                 {
                     xu = (xu - 2) % 3;
                 }
-                else {
+                else
+                {
                     xu = xu % 3;
                 }
                 u = xu / 2.0f;
@@ -113,7 +119,8 @@ public class TerrainGen : MonoBehaviour {
                 {
                     yu = (yu - 2) % 3;
                 }
-                else {
+                else
+                {
                     yu = yu % 3;
                 }
                 v = yu / 2.0f;
@@ -163,7 +170,7 @@ public class TerrainGen : MonoBehaviour {
         Vector3[] Verts = new Vector3[EdgeSize * EdgeSize];
         Vector2[] UVs = new Vector2[EdgeSize * EdgeSize];
         int[] Trys = new int[6 * ((EdgeSize - 1) * (EdgeSize - 1))];
-        
+
         #endregion
 
 
@@ -188,7 +195,9 @@ public class TerrainGen : MonoBehaviour {
                 if (xu > 2)
                 {
                     xu = (xu - 2) % 3;
-                }else{
+                }
+                else
+                {
                     xu = xu % 3;
                 }
                 u = xu / 2.0f;
@@ -196,7 +205,9 @@ public class TerrainGen : MonoBehaviour {
                 if (yu > 2)
                 {
                     yu = (yu - 2) % 3;
-                }else{
+                }
+                else
+                {
                     yu = yu % 3;
                 }
                 v = yu / 2.0f;
@@ -225,10 +236,7 @@ public class TerrainGen : MonoBehaviour {
         M_mesh.RecalculateNormals();
         M_Filt.mesh = M_mesh;
         M_Coll.sharedMesh = M_mesh;
-        if(GetComponent<TerrainDeco>() != null)
-        {
-            GetComponent<TerrainDeco>().Deco();
-        }
+
     }
 
     private float GetHeight(float x, float y)
@@ -237,17 +245,18 @@ public class TerrainGen : MonoBehaviour {
         {
             OctSize++;
         }
-        if(Seeds == null || TD_Octaves == null)
+        if (Seeds == null || TD_Octaves == null)
         {
             Seeds = new int[OctSize];
-            TD_Octaves = new TerrainData[OctSize];
-            for (int i = 0; i < OctSize; i++){
+            TD_Octaves = new TerrainNoise[OctSize];
+            for (int i = 0; i < OctSize; i++)
+            {
                 Seeds[i] = Randy.Next();
-                TD_Octaves[i] = new TerrainData(Seeds[i],(int)( (i + 1) * layerWeight));
+                TD_Octaves[i] = new TerrainNoise(Seeds[i], (int)((i + 1) * layerWeight));
             }
         }
         float output = 0;
-        for(int i = 0; i < OctSize; i++)
+        for (int i = 0; i < OctSize; i++)
         {
             output += TD_Octaves[i].getHeight(x, y) * ((i + 1) / (octWeight * OctSize));
         }
@@ -255,24 +264,23 @@ public class TerrainGen : MonoBehaviour {
         return output;
     }
 
-    private float GetScale(float x,float y)
+    private float GetScale(float x, float y)
     {
         if (TD_ScaleMap == null)
         {
-            TD_ScaleMap = new TerrainData(Seed, 1);
+            TD_ScaleMap = new TerrainNoise(Seed, 1);
         }
-        float o = (TD_ScaleMap.getHeight(x/500f, y/500f) ) ;
-        o = Mathf.Max(0, Mathf.Min(o+0.5f, 1.5f))/1.3f;
+        float o = (TD_ScaleMap.getHeight(x / 500f, y / 500f));
+        o = Mathf.Max(0, Mathf.Min(o + 0.5f, 1.5f)) / 1.3f;
         return o;
 
     }
-    
+
 }
 
 
 class MeshData
 {
-    bool Ready = false;
     public Vector3[] verts;
     public Vector2[] UVs;
     public int[] Triangles;
