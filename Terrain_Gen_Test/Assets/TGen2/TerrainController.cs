@@ -5,20 +5,26 @@ using System.Threading;
 public class TerrainController
 {
 
+    private int Seed;
+    private byte octaveFequencyScale;
+
 	private byte octaves;
-	public TerrainNoise Noise;
+	private TerrainNoise[] Noise;
+
 
 	public TerrainController()
 	{
 		octaves = 4;
+        octaveFequencyScale = 5;
+        Seed = 99999;
 	}
 
 	public void Test()
 	{
-		Noise = new TerrainNoise("TestSeed",2);
-		for(int x = -1; x < 2; x++)
+        PrepNoise();
+		for(int x = -5; x < 6; x++)
 		{
-			for(int y = -1; y < 2; y++)
+			for(int y = -5; y < 6; y++)
 			{
 				TerainGenv2 TG = new TerainGenv2(this, x, y);
 				TG.CreateTerrain();
@@ -27,7 +33,26 @@ public class TerrainController
 	
 	}
 
-	public class ChunkSettings
+    public float getHeight(float x, float y)
+    {
+        float h = 0;
+        foreach(var a in Noise)
+        {
+            h += a.getHeight(x, y);
+        }
+        return h;
+    }
+
+    private void PrepNoise()
+    {
+        Noise = new TerrainNoise[octaves];
+        for(byte a = 0; a < octaves; a++)
+        {
+            Noise[a] = new TerrainNoise(Seed, (a + 1) * octaveFequencyScale);
+        }
+    }
+
+    public class ChunkSettings
 	{
 		public int HeightmapResolution { get; private set; }
 		public int AplhamapResolution { get; private set; }

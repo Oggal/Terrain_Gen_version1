@@ -17,7 +17,7 @@ public class TerainGenv2
 		TerrainCtrl = TC;
 		X = x;
 		Z = z;
-		settings = new TerrainController.ChunkSettings(129, 129, 100, 100);
+		settings = new TerrainController.ChunkSettings(129, 129, 50, 100);
 	}
 
 	public void CreateTerrain()
@@ -33,6 +33,8 @@ public class TerainGenv2
 		var TerrainGameObj = Terrain.CreateTerrainGameObject(TerrainDat);
 		TerrainGameObj.transform.position = new Vector3(X * settings.Length, 0, Z * settings.Length);
 		_Terrain = TerrainGameObj.GetComponent<Terrain>();
+        if(GlobalDataController.GameControler != null)
+            _Terrain.gameObject.transform.parent = GlobalDataController.GameControler.WorldObj.transform;
 		_Terrain.Flush();
 	}
 
@@ -43,9 +45,9 @@ public class TerainGenv2
 		{
 			for (int xRes = 0; xRes < settings.HeightmapResolution; xRes++)
 			{
-				float xCoord = X + (float)xRes / (settings.HeightmapResolution -1);
-				float zCoord = Z + (float)zRes / (settings.HeightmapResolution-1) ;
-				heightmap[zRes, xRes] = (TerrainCtrl.Noise.getHeight(xCoord, zCoord))/2f+0.5f;
+                float xCoord = (X + (float)xRes / (settings.HeightmapResolution - 1));
+                float zCoord = (Z + (float)zRes / (settings.HeightmapResolution - 1));
+				heightmap[zRes, xRes] = (TerrainCtrl.getHeight(xCoord, zCoord))/50f+0.5f;
 			}
 		}
 		return heightmap;

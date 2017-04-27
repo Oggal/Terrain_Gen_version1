@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class GlobalDataController : MonoBehaviour {
 
-    private GlobalDataController GameControler;
+    public static GlobalDataController GameControler;
     private TerrainController TerrainCtrl;
+
+    public GameObject WorldObj;
 
 	// Use this for initialization
 	void Start () {
