@@ -17,7 +17,7 @@ public class TerainGenv2
 		TerrainCtrl = TC;
 		X = x;
 		Z = z;
-		settings = new TerrainController.ChunkSettings(129, 129, 50, 100);
+		settings = new TerrainController.ChunkSettings(1025, 129, 1000, 400);
 	}
 
 	public void CreateTerrain()
@@ -45,9 +45,9 @@ public class TerainGenv2
 		{
 			for (int xRes = 0; xRes < settings.HeightmapResolution; xRes++)
 			{
-                float xCoord = (X + (float)xRes / (settings.HeightmapResolution - 1));
-                float zCoord = (Z + (float)zRes / (settings.HeightmapResolution - 1));
-				heightmap[zRes, xRes] = (TerrainCtrl.getHeight(xCoord, zCoord))/50f+0.5f;
+				float xCoord = (X + (float)xRes / (settings.HeightmapResolution - 1))*settings.Length;
+				float zCoord = (Z + (float)zRes/ (settings.HeightmapResolution - 1)) * settings.Length;
+				heightmap[zRes, xRes] = (TerrainCtrl.getHeight(xCoord, zCoord))/10f+0.5f;
 			}
 		}
 		return heightmap;

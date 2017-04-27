@@ -7,24 +7,25 @@ public class TerrainController
 
     private int Seed;
     private byte octaveFequencyScale;
+	public float OcativeWeight = 0.1f;
 
 	private byte octaves;
-	private TerrainNoise[] Noise;
-
+	private TerrainNoise[]	Noise;
+	private TerrainNoise GlobalScale;
 
 	public TerrainController()
 	{
 		octaves = 4;
-        octaveFequencyScale = 5;
+        octaveFequencyScale = 25;
         Seed = 99999;
 	}
 
 	public void Test()
 	{
         PrepNoise();
-		for(int x = -5; x < 6; x++)
+		for(int x = -1; x < 2; x++)
 		{
-			for(int y = -5; y < 6; y++)
+			for(int y = -1; y < 2; y++)
 			{
 				TerainGenv2 TG = new TerainGenv2(this, x, y);
 				TG.CreateTerrain();
@@ -35,11 +36,13 @@ public class TerrainController
 
     public float getHeight(float x, float y)
     {
-        float h = 0;
-        foreach(var a in Noise)
+        float h = Noise[0].getHeight(x, y)*2;
+        for(int j = 1;j<octaves;j++)
         {
-            h += a.getHeight(x, y);
+			var a = Noise[j];
+            h += a.getHeight(x, y) * (OcativeWeight * (j+1));
         }
+		h = h * (float)Math.Max(GlobalScale.getHeight(x * 0.001f, y * 0.001f), -0.05);
         return h;
     }
 
@@ -48,8 +51,9 @@ public class TerrainController
         Noise = new TerrainNoise[octaves];
         for(byte a = 0; a < octaves; a++)
         {
-            Noise[a] = new TerrainNoise(Seed, (a + 1) * octaveFequencyScale);
+            Noise[a] = new TerrainNoise(Seed * a, (a + 1) * octaveFequencyScale);
         }
+		GlobalScale = new TerrainNoise(Seed / 2,1);
     }
 
     public class ChunkSettings
