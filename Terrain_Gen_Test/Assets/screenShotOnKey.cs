@@ -28,7 +28,7 @@ public class screenShotOnKey : MonoBehaviour {
         }
             System.IO.FileInfo[] fis = d.GetFiles();
             count = fis.Length;
-            Application.CaptureScreenshot("Screenshot/Screenshot_" + count + ".png", 2);
+            ScreenCapture.CaptureScreenshot("Screenshot/Screenshot_" + count + ".png", 2);
         
     }
 }

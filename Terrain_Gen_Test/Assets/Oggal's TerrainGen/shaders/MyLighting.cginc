@@ -1,4 +1,6 @@
-﻿#if !defined(MY_LIGHTING_INCLUDED)
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+#if !defined(MY_LIGHTING_INCLUDED)
 #define MY_LIGHTING_INCLUDED
 
 #include "UnityPBSLighting.cginc"
@@ -37,7 +39,7 @@
 		i.uv = v.uv * _Rtex_ST.xy + _Rtex_ST.zw;
 		//i.localPos = (v.pos.y+25)/50;
 		i.localPos = 0;
-		i.pos =mul(UNITY_MATRIX_MVP,v.pos);
+		i.pos =UnityObjectToClipPos(v.pos);
 
 		float x = v.pos.y - _RMid;
 		i.localPos.r = max(0, min(1,2- ((x / _RRange)*(x / _RRange))));

@@ -75,7 +75,7 @@ public class TerrainGen : MonoBehaviour
         transform.position = p;
         wX = T_Trans.localPosition.x;
         wY = T_Trans.localPosition.z;
-
+        Debug.Log("MoveStart");
         new Thread(Move).Start();
     }
 
