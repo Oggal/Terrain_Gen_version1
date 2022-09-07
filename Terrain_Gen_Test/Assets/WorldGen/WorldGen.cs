@@ -504,7 +504,7 @@ public class WorldGen : MonoBehaviour {
 
 		//This really only needs done if we're close enought to something that modifies terrain.
 		//We could store a list of modifiers and adjust from there.
-        if (ratio !=0)
+        if (Modifiers.Count!=0 && ratio !=0)
         {
 			getRatio(px, py, out float height);
 
