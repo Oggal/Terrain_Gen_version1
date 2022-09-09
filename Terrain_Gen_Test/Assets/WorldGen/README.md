@@ -41,4 +41,17 @@ WorldGen.cs
 
         public int TileSize [= 100]
             Size of the phyicical Tile
-                Is this a radius or a true full size?
+            This is the true size of the tile in unity units.
+        
+        public int V_VertexCount [= 100 [3-200]]
+
+        public int P_VertexCount [= 100 [3-200]]
+
+        public int Radius [0-10]
+            Radius of Tiles beyond center tile
+
+    Events
+        public WorldGenStart
+            Called at Start of Inital World Gen
+        public WorldGenFinish
+            Called at End of TILE gen --NOT INTENDED BEHAVIOR
