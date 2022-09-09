@@ -35,7 +35,7 @@ public class WorldGen : MonoBehaviour {
     public int V_VertexCount= 100;
 	[Range(3,200)]
 	public int P_VertexCount = 50;
-    [Range(0, 10)]
+    [Range(0, 10),Tooltip("Radius of Tiles beyond center")]
     public int Radius;
 
 
@@ -184,10 +184,10 @@ public class WorldGen : MonoBehaviour {
 		
 		//If we are not using a preset Seed generate a new one
         if (!UseSeed)
-            Seed = Random.Range(-9999999, 9999999);
+            Seed = Random.Range(int.MinValue,int.MaxValue);
 		Seeds = new int[OctaveCount + 2];
 		Seeds[0] = Seed;
-		
+			
 		System.Random r = new System.Random(Seed);  //Create the Random object to be used
 		Seeds[OctaveCount + 1] = r.Next();
 
